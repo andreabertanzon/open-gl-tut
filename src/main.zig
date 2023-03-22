@@ -29,13 +29,12 @@ pub fn initialize_sdl_gl_attributes() !void {
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_MINOR_VERSION, 6);
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_PROFILE_MASK, c.SDL_GL_CONTEXT_PROFILE_CORE);
-
     //Setting double buffering
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_DOUBLEBUFFER, 1);
     // setting precision
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_DEPTH_SIZE, 24);
 }
-pub fn vertex_specification() !void {
+pub fn vertexSpecification() !void {
     const vertexPosition: [9]f32 = [_]f32{ -0.8, -0.8, 0.0,
                                             0.8, -0.8, 0.0, 
                                             0.0, 0.8, 0.0 };
@@ -200,7 +199,7 @@ pub fn clean_up() !void {
 pub fn main() !void {
     try initialize_program();
 
-    try vertex_specification();
+    try vertexSpecification();
 
     try create_graphics_pipeline();
 
