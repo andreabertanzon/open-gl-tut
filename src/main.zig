@@ -25,7 +25,7 @@ var gGraphicsPipelineShaderProgram: c.GLuint = 0;
 var gFragmentShaderSource: []const u8 = "#version 460 core\nout vec4 color;\nvoid main()\n{\n    color = vec4(1.0f, 0.5f, 0.0f, 1.0f);\n}\n";
 var gVertexShaderSource: []const u8 = "#version 460 core\nin vec4 position;\nvoid main()\n{\n   gl_Position = vec4(position.x, position.y, position.z, position.w);\n}\n";
 ///initializing attributes
-pub fn initialize_sdl_gl_attributes() !void {
+pub fn initializeSdlGlAttributes() !void {
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_MINOR_VERSION, 6);
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_PROFILE_MASK, c.SDL_GL_CONTEXT_PROFILE_CORE);
@@ -123,7 +123,7 @@ pub fn initialize_program() !void {
         @panic("critical error initializing SDL");
     }
 
-    initialize_sdl_gl_attributes() catch |e| {
+    initializeSdlGlAttributes() catch |e| {
         print("error initializing SDL_Attributes", .{});
         @panic(@errorName(e));
     };
