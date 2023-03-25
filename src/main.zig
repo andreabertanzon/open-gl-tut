@@ -22,8 +22,8 @@ var gVertexBufferObject: c.GLuint = 0;
 /// Program Object for shader
 var gGraphicsPipelineShaderProgram: c.GLuint = 0;
 
-var gFragmentShaderSource: []const u8 = "#version 460 core\nout vec4 color;\nvoid main()\n{\n    color = vec4(1.0f, 0.5f, 0.0f, 1.0f);\n}\n";
-var gVertexShaderSource: []const u8 = "#version 460 core\nin vec4 position;\nvoid main()\n{\n   gl_Position = vec4(position.x, position.y, position.z, position.w);\n}\n";
+// var gFragmentShaderSource: []const u8 = "#version 460 core\nout vec4 color;\nvoid main()\n{\n    color = vec4(1.0f, 0.5f, 0.0f, 1.0f);\n}\n";
+// var gVertexShaderSource: []const u8 = "#version 460 core\nin vec4 position;\nvoid main()\n{\n   gl_Position = vec4(position.x, position.y, position.z, position.w);\n}\n";
 
 ///initializing attributes
 pub fn initializeSdlGlAttributes() !void {
