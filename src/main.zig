@@ -24,6 +24,7 @@ var gGraphicsPipelineShaderProgram: c.GLuint = 0;
 
 var gFragmentShaderSource: []const u8 = "#version 460 core\nout vec4 color;\nvoid main()\n{\n    color = vec4(1.0f, 0.5f, 0.0f, 1.0f);\n}\n";
 var gVertexShaderSource: []const u8 = "#version 460 core\nin vec4 position;\nvoid main()\n{\n   gl_Position = vec4(position.x, position.y, position.z, position.w);\n}\n";
+
 ///initializing attributes
 pub fn initializeSdlGlAttributes() !void {
     _ = c.SDL_GL_SetAttribute(c.SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -52,7 +53,7 @@ pub fn vertexSpecification() !void {
 
     // CLEANUP
     c.glBindVertexArray(0);
-    // c.glDisableVertexAttribArray(0);
+    c.glDisableVertexAttribArray(0);
 }
 
 fn glDebugOutput(_: c_uint, _: c_uint, _: c_uint, severity: c_uint, length: c_int, message: [*c]const u8, _: ?*const anyopaque) callconv(.C) void {
@@ -65,7 +66,7 @@ fn glDebugOutput(_: c_uint, _: c_uint, _: c_uint, severity: c_uint, length: c_in
     }
 }
 
-pub fn compile_shader(shaderType: c.GLuint, sourceCode: *[]const u8) !c.GLuint {
+pub fn compileShader(shaderType: c.GLuint, sourceCode: *[]const u8) !c.GLuint {
     var shaderObject: c.GLuint = 0;
     if (shaderType == c.GL_VERTEX_SHADER) {
         shaderObject = c.glCreateShader(c.GL_VERTEX_SHADER);
@@ -89,11 +90,11 @@ pub fn compile_shader(shaderType: c.GLuint, sourceCode: *[]const u8) !c.GLuint {
     return shaderObject;
 }
 
-pub fn create_shader_program(vertexShaderSource: *[]const u8, fragmentShaderSource: *[]const u8) !c.GLuint {
+pub fn createShaderProgram(vertexShaderSource: *[]const u8, fragmentShaderSource: *[]const u8) !c.GLuint {
     var programObject: c.GLuint = c.glCreateProgram();
 
-    var myVertexShader: c.GLuint = try compile_shader(c.GL_VERTEX_SHADER, vertexShaderSource);
-    var myFragmentShader: c.GLuint = try compile_shader(c.GL_FRAGMENT_SHADER, fragmentShaderSource);
+    var myVertexShader: c.GLuint = try compileShader(c.GL_VERTEX_SHADER, vertexShaderSource);
+    var myFragmentShader: c.GLuint = try compileShader(c.GL_FRAGMENT_SHADER, fragmentShaderSource);
 
     c.glAttachShader(programObject, myVertexShader);
     c.glAttachShader(programObject, myFragmentShader);
@@ -111,13 +112,13 @@ pub fn create_shader_program(vertexShaderSource: *[]const u8, fragmentShaderSour
     return programObject;
 }
 
-pub fn create_graphics_pipeline() !void {
+pub fn createGraphicsPipeline() !void {
     print("shaderVertex:\n{s}\nshaderFragment:{s}\n", .{ gVertexShaderSource, gFragmentShaderSource });
-    gGraphicsPipelineShaderProgram = try create_shader_program(&gVertexShaderSource, &gFragmentShaderSource);
+    gGraphicsPipelineShaderProgram = try createShaderProgram(&gVertexShaderSource, &gFragmentShaderSource);
 }
 
 /// initialization of SDL
-pub fn initialize_program() !void {
+pub fn initializeProgram() !void {
     if (c.SDL_Init(c.SDL_INIT_VIDEO) < 0) {
         print("SDL2 could not initialize the video subsystem", .{});
         @panic("critical error initializing SDL");
@@ -163,7 +164,7 @@ pub fn input() !void {
 }
 
 /// sets openGL state
-pub fn pre_draw() !void {
+pub fn preDraw() !void {
     c.glDisable(c.GL_DEPTH_TEST);
     c.glDisable(c.GL_CULL_FACE);
     c.glViewport(0, 0, gScreenWidth, gScreenHeight);
@@ -179,11 +180,11 @@ pub fn draw() !void {
     c.glDrawArrays(c.GL_TRIANGLES, 0, 3);
 }
 
-pub fn main_loop() !void {
+pub fn mainLoop() !void {
     while (!gQuit) {
         try input();
 
-        try pre_draw();
+        try preDraw();
 
         try draw();
 
@@ -191,21 +192,26 @@ pub fn main_loop() !void {
     }
 }
 
-pub fn clean_up() !void {
+pub fn cleanUp() !void {
     c.SDL_DestroyWindow(gGraphicsApplicationWindow);
     c.SDL_Quit();
 }
 
 pub fn main() !void {
-    try initialize_program();
-
+    // sets up the graphics program
+    try initializeProgram();
+    
+    // setup geometry
     try vertexSpecification();
 
-    try create_graphics_pipeline();
+    //create the graphics pipeline (vertex and fragment shaders)
+    try createGraphicsPipeline();
 
-    try main_loop();
+    // application main loop
+    try mainLoop();
 
-    try clean_up();
+    // clean up afer program termination
+    try cleanUp();
 }
 
 test "simple test" {
