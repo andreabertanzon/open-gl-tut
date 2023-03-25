@@ -214,9 +214,24 @@ pub fn main() !void {
     try cleanUp();
 }
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+// function that takes a path and an allocator and returns a string
+pub fn loadFromFile(allocator: std.mem.Allocator, stringPath: []const u8) ![]const u8 {
+    var path_buffer: [std.fs.MAX_PATH_BYTES]u8 = undefined;
+    const path: []u8 = std.fs.realpath(stringPath, &path_buffer) catch |e| {
+        std.debug.print("IO-ERROR {s}", .{@errorName(e)});
+        return e;
+    };
+    var file = try std.fs.cwd().openFile(path, .{ .mode= .read_only });
+    defer file.close();
+    var contents = try file.readToEndAlloc(allocator, std.math.maxInt(usize));
+    return contents;
+}
+
+test "red file alloc" {
+    var gp = std.heap.GeneralPurposeAllocator(.{ .safety = true }){};
+    defer _ = gp.deinit();
+    const allocator = gp.allocator();
+    var pippo = try loadFromFile(allocator, "./shaders/default.vert");
+    print("pippo:\n{s}", .{pippo});
+    allocator.free(pippo);
 }
