@@ -113,8 +113,21 @@ pub fn createShaderProgram(vertexShaderSource: *[]const u8, fragmentShaderSource
 }
 
 pub fn createGraphicsPipeline() !void {
-    print("shaderVertex:\n{s}\nshaderFragment:{s}\n", .{ gVertexShaderSource, gFragmentShaderSource });
-    gGraphicsPipelineShaderProgram = try createShaderProgram(&gVertexShaderSource, &gFragmentShaderSource);
+    //TODO: can I change it to use a stack allocator?
+    var gp = std.heap.GeneralPurposeAllocator(.{ .safety = true }){};
+    defer _ = gp.deinit();
+    
+    // loading the shader files (vert and fragment)
+    const allocator = gp.allocator();
+    var vertexShaderSource = try loadFromFileAsString(allocator, "./shaders/default.vert");
+    var fragmentShaderSource = try loadFromFileAsString(allocator, "./shaders/default.frag");
+
+    // actually create the shader program
+    gGraphicsPipelineShaderProgram = try createShaderProgram(&vertexShaderSource, &fragmentShaderSource);
+    
+    // free your memory
+    allocator.free(vertexShaderSource);
+    allocator.free(fragmentShaderSource);
 }
 
 /// initialization of SDL
@@ -215,7 +228,8 @@ pub fn main() !void {
 }
 
 // function that takes a path and an allocator and returns a string
-pub fn loadFromFile(allocator: std.mem.Allocator, stringPath: []const u8) ![]const u8 {
+// here using allocator since I don't know how bigger the file will be.
+pub fn loadFromFileAsString(allocator: std.mem.Allocator, stringPath: []const u8) ![]const u8 {
     var path_buffer: [std.fs.MAX_PATH_BYTES]u8 = undefined;
     const path: []u8 = std.fs.realpath(stringPath, &path_buffer) catch |e| {
         std.debug.print("IO-ERROR {s}", .{@errorName(e)});
@@ -231,7 +245,7 @@ test "red file alloc" {
     var gp = std.heap.GeneralPurposeAllocator(.{ .safety = true }){};
     defer _ = gp.deinit();
     const allocator = gp.allocator();
-    var pippo = try loadFromFile(allocator, "./shaders/default.vert");
+    var pippo = try loadFromFileAsString(allocator, "./shaders/default.vert");
     print("pippo:\n{s}", .{pippo});
     allocator.free(pippo);
 }
